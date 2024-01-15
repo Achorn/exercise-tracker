@@ -23,7 +23,7 @@ const exerciseSchema = mongoose.Schema({
   username: String,
   description: String,
   duration: Number,
-  date: String,
+  date: Date,
   user_id: String,
 });
 
@@ -69,7 +69,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
         username: userData.username,
         description: req.body.description || "",
         duration: req.body.duration || 0,
-        date: date.toDateString(),
+        date: date,
         user_id: userData._id,
       });
       newExersize
@@ -81,7 +81,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
           res.json({
             _id: data.user_id,
             username: data.username,
-            date: data.date,
+            date: data.date.toDateStri,
             duration: data.duration,
             description: data.description,
           });
@@ -90,20 +90,23 @@ app.post("/api/users/:_id/exercises", (req, res) => {
 });
 
 app.get("/api/users/:_id/logs", (req, res) => {
-  console.log("hello");
   User.findById(req.params._id)
     .catch((err) => res.json({ err: err }))
     .then((userData) => {
       Exersize.find({ user_id: req.params._id })
         .catch((err) => res.json({ err: err }))
-        .then((data) =>
+        .then((data) => {
+          data.forEach((object) => {
+            let dateStr = object.date.toDateString();
+            object["date"] = dateStr;
+          });
           res.json({
             _id: userData._id,
             username: userData.username,
             count: data.length,
             log: data,
-          })
-        );
+          });
+        });
     });
 });
 
