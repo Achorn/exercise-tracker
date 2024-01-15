@@ -81,7 +81,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
           res.json({
             _id: data.user_id,
             username: data.username,
-            date: data.date.toDateStri,
+            date: data.date.toDateString(),
             duration: data.duration,
             description: data.description,
           });
@@ -96,15 +96,17 @@ app.get("/api/users/:_id/logs", (req, res) => {
       Exersize.find({ user_id: req.params._id })
         .catch((err) => res.json({ err: err }))
         .then((data) => {
-          data.forEach((object) => {
-            let dateStr = object.date.toDateString();
-            object["date"] = dateStr;
-          });
           res.json({
             _id: userData._id,
             username: userData.username,
             count: data.length,
-            log: data,
+            log: data.map((exercise) => {
+              return {
+                description: exercise.description,
+                duration: exercise.duration,
+                date: exercise.date.toDateString(),
+              };
+            }),
           });
         });
     });
