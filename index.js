@@ -5,8 +5,10 @@ const bodyParser = require("body-parser");
 const { default: mongoose, mongo } = require("mongoose");
 require("dotenv").config();
 
+//MIDDLEWARE
 app.use(cors());
 app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 //MONGOOSE METHODS
 mongoose.connect(process.env.MONGO_URI);
@@ -23,8 +25,27 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/users", (req, res) => {
-  //get user name from body parser
-  // create new user
+  if (!req.body.username) res.json({ error: "no username" });
+  let newUser = new User({ username: req.body.username });
+
+  newUser
+    .save()
+    .catch((err) => {
+      res.json({ error: err });
+    })
+    .then((data) => {
+      res.json({ username: data.username, _id: data._id });
+    });
+});
+
+app.get("/api/users", (req, res) => {
+  //get all users
+  User.find({}, "username _id")
+    .catch((err) => res.json({ err: err }))
+
+    .then((data) => {
+      res.json(data);
+    });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
