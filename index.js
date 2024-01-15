@@ -14,11 +14,20 @@ app.use(bodyParser.urlencoded({ extended: false }));
 mongoose.connect(process.env.MONGO_URI);
 
 const userSchema = mongoose.Schema({
-  username: "String",
+  username: String,
   //_id is created automatically
 });
 const User = mongoose.model("User", userSchema);
 
+const exerciseSchema = mongoose.Schema({
+  username: String,
+  description: String,
+  duration: Number,
+  date: String,
+  _id: String,
+});
+
+const Exersize = mongoose.model("Exersize", exerciseSchema);
 //EXPRESS METHODS
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -42,9 +51,30 @@ app.get("/api/users", (req, res) => {
   //get all users
   User.find({}, "username _id")
     .catch((err) => res.json({ err: err }))
-
     .then((data) => {
       res.json(data);
+    });
+});
+
+app.post("/api/users/:_id/exercises", (req, res) => {
+  // check for valid user Id
+  User.findById(req.params._id)
+    .catch((err) => res.json({ err: err }))
+    .then((userData) => {
+      // let date = new Date(Date.parse(req.body.date)) || new Date();
+      // console.log(date.toDateString());
+      // let newExersize = Exersize({
+      //   username: userData.username,
+      //   description: req.body.description || "",
+      //   duration: req.body.duration || 0,
+      //   date: date.toDateString(),
+      // });
+      // newExersize
+      //   .save()
+      //   .catch((err) => res.json({ error: err }))
+      //   .then((data) => {
+      //     res.json(data);
+      //   });
     });
 });
 
