@@ -13,12 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //MONGOOSE METHODS
 mongoose.connect(process.env.MONGO_URI);
 
-const userSchema = mongoose.Schema({
-  username: String,
-  //_id is created automatically
-});
-const User = mongoose.model("User", userSchema);
-
+const userSchema = mongoose.Schema({ username: String });
 const exerciseSchema = mongoose.Schema({
   username: String,
   description: String,
@@ -27,7 +22,9 @@ const exerciseSchema = mongoose.Schema({
   user_id: String,
 });
 
+const User = mongoose.model("User", userSchema);
 const Exersize = mongoose.model("Exersize", exerciseSchema);
+
 //EXPRESS METHODS
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -77,8 +74,6 @@ app.post("/api/users/:_id/exercises", (req, res) => {
         .save()
         .catch((err) => res.json({ error: err }))
         .then((data) => {
-          console.log("problem officer?");
-          console.log(data);
           res.json({
             _id: data.user_id,
             username: data.username,
