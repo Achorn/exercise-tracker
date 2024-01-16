@@ -33,28 +33,29 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-app.post("/api/users", (req, res) => {
-  if (!req.body.username) res.json({ error: "no username" });
-  let newUser = new User({ username: req.body.username });
+app
+  .route("/api/users")
+  .get((req, res) => {
+    //get all users
+    User.find({}, "username _id")
+      .catch((err) => res.json({ err: err }))
+      .then((data) => {
+        res.json(data);
+      });
+  })
+  .post((req, res) => {
+    if (!req.body.username) res.json({ error: "no username" });
+    let newUser = new User({ username: req.body.username });
 
-  newUser
-    .save()
-    .catch((err) => {
-      res.json({ error: err });
-    })
-    .then((data) => {
-      res.json({ username: data.username, _id: data._id });
-    });
-});
-
-app.get("/api/users", (req, res) => {
-  //get all users
-  User.find({}, "username _id")
-    .catch((err) => res.json({ err: err }))
-    .then((data) => {
-      res.json(data);
-    });
-});
+    newUser
+      .save()
+      .catch((err) => {
+        res.json({ error: err });
+      })
+      .then((data) => {
+        res.json({ username: data.username, _id: data._id });
+      });
+  });
 
 app.post("/api/users/:_id/exercises", (req, res) => {
   // check for valid user Id
@@ -93,8 +94,25 @@ app.get("/api/users/:_id/logs", (req, res) => {
   User.findById(req.params._id)
     .catch((err) => res.json({ err: err }))
     .then((userData) => {
-      Exersize.find({ user_id: req.params._id })
+      let from = req.query.from;
+      let to = req.query.to;
+      let limit = req.query.limit ? { limit: req.query.limit } : null;
+
+      Exersize.find({ user_id: req.params._id }, null, limit)
         .catch((err) => res.json({ err: err }))
+        .then((exersizes) => {
+          //filter by dates
+          if (to && from) {
+            return Exersize.find(
+              {
+                user_id: req.params._id,
+                date: { $gte: from, $lte: to },
+              },
+              null
+            );
+          }
+          return exersizes;
+        })
         .then((data) => {
           res.json({
             _id: userData._id,
